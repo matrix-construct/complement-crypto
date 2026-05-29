@@ -62,5 +62,14 @@ uniffi-bindgen-go -o $COMPLEMENT_DIR/internal/api/rust --config $COMPLEMENT_DIR/
 cd $COMPLEMENT_DIR
 sed -i.bak 's^// #include <matrix_sdk_ffi.h>^// #include <matrix_sdk_ffi.h>\n// #cgo LDFLAGS: -lmatrix_sdk_ffi^' internal/api/rust/matrix_sdk_ffi/matrix_sdk_ffi.go
 
+# Work around a uniffi-bindgen-go v0.7.0+v0.31.0 defect: the generated
+# uniffiRustCallAsync lifts the success buffer unconditionally, so a fallible
+# async call that returns Err decodes an empty buffer and panics with EOF
+# (e.g. Timeline.get_event_timeline_item_by_event_id when the item is absent),
+# aborting the whole test binary. Short-circuit before lifting. The error is a
+# generic type parameter E, so detect it by comparing against E's zero value
+# through interface boxing rather than a nil check.
+sed -i 's|^\t\(return liftFunc(ffiValue), err\)$|\tvar zeroValue T\n\tvar zeroErr E\n\tif any(err) != any(zeroErr) {\n\t\treturn zeroValue, err\n\t}\n\t\1|' internal/api/rust/matrix_sdk_ffi/matrix_sdk_ffi.go
+
 echo "OK! Ensure LIBRARY_PATH and LD_LIBRARY_PATH are set to $RUST_SDK_DIR/target/debug so the .so/.dylib file is picked up when 'go test' is run."
 echo "e.g COMPLEMENT_BASE_IMAGE=homeserver:latest LIBRARY_PATH=\$LIBRARY_PATH:$RUST_SDK_DIR/target/debug LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUST_SDK_DIR/target/debug go test ./tests"
