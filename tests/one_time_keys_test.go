@@ -107,6 +107,24 @@ func TestFallbackKeyIsUsedIfOneTimeKeysRunOut(t *testing.T) {
 			otkCount := res.Get("device_one_time_keys_count.signed_curve25519").Int()
 			t.Logf("uploaded otk count => %d", otkCount)
 
+			// The rust SDK uploads its fallback key asynchronously, in a separate
+			// /keys/upload that follows a sync round-trip rather than alongside the
+			// one-time keys. Wait for that upload to land before blocking
+			// /keys/upload below; otherwise the block can race ahead of it and the
+			// fallback key never reaches the server. The server advertises an
+			// uploaded, unused fallback key in device_unused_fallback_key_types.
+			tc.Alice.MustSyncUntil(t, client.SyncReq{}, func(_ string, sync gjson.Result) error {
+				for _, algo := range sync.Get("device_unused_fallback_key_types").Array() {
+					if algo.Str == "signed_curve25519" {
+						return nil
+					}
+				}
+				return fmt.Errorf(
+					"fallback key not yet uploaded: device_unused_fallback_key_types=%v",
+					sync.Get("device_unused_fallback_key_types").Raw,
+				)
+			})
+
 			var roomID string
 			var waiter api.Waiter
 			// Block all /keys/upload requests for Alice
