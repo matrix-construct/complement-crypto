@@ -81,3 +81,5 @@ require (
 	golang.org/x/sys v0.43.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/matrix-org/complement => github.com/matrix-construct/complement v0.0.0-20260608054720-af3c1015c5fd

@@ -80,6 +80,8 @@ github.com/lufia/plan9stats v0.0.0-20251013123823-9fd1530e3ec3 h1:PwQumkgq4/acIi
 github.com/lufia/plan9stats v0.0.0-20251013123823-9fd1530e3ec3/go.mod h1:autxFIvghDt3jPTLoqZ9OZ7s9qTGNAWmYCjVFWPX/zg=
 github.com/magiconair/properties v1.8.10 h1:s31yESBquKXCV9a/ScB3ESkOjUYYv+X0rg8SYxI99mE=
 github.com/magiconair/properties v1.8.10/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
+github.com/matrix-construct/complement v0.0.0-20260608054720-af3c1015c5fd h1:KAEx7mFBqB1123aHhjlgxLEbSSz0uScYGVTabnnAcJI=
+github.com/matrix-construct/complement v0.0.0-20260608054720-af3c1015c5fd/go.mod h1:FsCPyw1im4SHPSenWXbWexeuF1sQbU8BuLsVP59e+QU=
 github.com/matrix-org/complement v0.0.0-20260529105654-db8c562a8790 h1:mI1YOT/10PtkUcGvCPWaCsOkdrL4HXfU32rCoQ11RnA=
 github.com/matrix-org/complement v0.0.0-20260529105654-db8c562a8790/go.mod h1:FsCPyw1im4SHPSenWXbWexeuF1sQbU8BuLsVP59e+QU=
 github.com/matrix-org/gomatrix v0.0.0-20220926102614-ceba4d9f7530 h1:kHKxCOLcHH8r4Fzarl4+Y3K5hjothkVW5z7T1dUM11U=
