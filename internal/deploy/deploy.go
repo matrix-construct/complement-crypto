@@ -140,13 +140,13 @@ func (d *ComplementCryptoDeployment) Teardown() {
 }
 
 func RunNewDeployment(t *testing.T, mitmAddonsDir, mitmDumpFile string) *ComplementCryptoDeployment {
-	// allow time for everything to deploy
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
 	// Deploy the homeserver using Complement
 	deployment := complement.Deploy(t, 2)
 	networkName := deployment.Network()
+
+	// Allow time for the reverse proxy to deploy.
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
 
 	// Make the mitmproxy and hardcode CONTAINER PORTS for hs1/hs2. HOST PORTS are still dynamically allocated.
 	// By running this container on the same network as the homeservers, we can leverage DNS hence hs1/hs2 URLs.
@@ -193,6 +193,19 @@ func RunNewDeployment(t *testing.T, mitmAddonsDir, mitmDumpFile string) *Complem
 		ContainerRequest: mitmContainerReq,
 		Started:          true,
 	})
+	cleanupOnFailure := true
+	defer func() {
+		if !cleanupOnFailure {
+			return
+		}
+
+		if mitmproxyContainer != nil {
+			if cleanupErr := mitmproxyContainer.Terminate(context.Background()); cleanupErr != nil {
+				t.Logf("failed to clean up reverse proxy container: %s", cleanupErr)
+			}
+		}
+		deployment.Destroy(t)
+	}()
 	must.NotError(t, "failed to start reverse proxy container", err)
 
 	rpHS1URL := externalURL(t, mitmproxyContainer, hs1ExposedPort)
@@ -213,7 +226,7 @@ func RunNewDeployment(t *testing.T, mitmAddonsDir, mitmDumpFile string) *Complem
 	controllerURL = strings.Replace(controllerURL, "localhost", "127.0.0.1", 1)
 	proxyURL, err := url.Parse(controllerURL)
 	must.NotError(t, "failed to parse controller URL", err)
-	return &ComplementCryptoDeployment{
+	newDeployment := &ComplementCryptoDeployment{
 		Deployment: deployment,
 		extraContainers: map[string]testcontainers.Container{
 			"mitmproxy": mitmproxyContainer,
@@ -226,6 +239,8 @@ func RunNewDeployment(t *testing.T, mitmAddonsDir, mitmDumpFile string) *Complem
 		},
 		mitmDumpFile: mitmDumpFile,
 	}
+	cleanupOnFailure = false
+	return newDeployment
 }
 
 func externalURL(t *testing.T, c testcontainers.Container, exposedPort string) string {
