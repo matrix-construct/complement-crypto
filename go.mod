@@ -76,4 +76,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/matrix-org/complement => github.com/matrix-construct/complement v0.0.0-20261104112220-35d9ccc917d7
+replace github.com/matrix-org/complement => github.com/matrix-construct/complement v0.0.0-20261110041123-eae8d2d7237d
